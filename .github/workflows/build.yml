@@ -1,0 +1,54 @@
+```yaml
+name: Build Padavan Gaming Firmware
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Install Compiling Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y unzip libtool-bin curl cmake gperf gawk flex bison xxd fakeroot kmod cpio git python3-docutils gettext automake autopoint texinfo build-essential help2man pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget libc-dev-bin
+
+    - name: Clone Source Code
+      run: |
+        git clone --depth=1 https://github.com/hanwckf/rt-n56u.git /opt/rt-n56u
+
+    - name: Pull Precompiled Toolchain
+      run: |
+        cd /opt/rt-n56u/toolchain-mipsel
+        sh dl_toolchain.sh
+
+    - name: Inject CoD Optimization Profile
+      run: |
+        cat << 'EOF' > /opt/rt-n56u/trunk/configs/templates/RT-AC51U.config
+        CONFIG_FIRMWARE_PRODUCT_ID="RT-AC51U"
+        CONFIG_FIRMWARE_INCLUDE_HW_NAT=y
+        CONFIG_FIRMWARE_INCLUDE_UPNP=y
+        CONFIG_FIRMWARE_INCLUDE_MINIDLNA=n
+        CONFIG_FIRMWARE_INCLUDE_FIREFLY=n
+        CONFIG_FIRMWARE_INCLUDE_TRANSMISSION=n
+        CONFIG_FIRMWARE_INCLUDE_SSTP=n
+        CONFIG_FIRMWARE_INCLUDE_OPENVPN=n
+        CONFIG_FIRMWARE_INCLUDE_SAMBA=n
+        CONFIG_FIRMWARE_INCLUDE_WINS=n
+        CONFIG_FIRMWARE_INCLUDE_HTTPS=n
+        CONFIG_FIRMWARE_INCLUDE_SFTP=n
+        EOF
+
+    - name: Compile Custom Binary
+      run: |
+        cd /opt/rt-n56u/trunk
+        fakeroot ./build_firmware_modify RT-AC51U
+
+    - name: Package Firmware File
+      uses: actions/upload-artifact@v3
+      with:
+        name: Padavan_RT-AC53_CoD_Edition
+        path: /opt/rt-n56u/trunk/images/*.trx
