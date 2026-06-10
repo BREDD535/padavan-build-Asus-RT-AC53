@@ -30,20 +30,33 @@ jobs:
 
     - name: Inject CoD Optimization Profile
       run: |
-        cat << 'EOF' > /opt/rt-n56u/trunk/configs/templates/PSG1218.config
-        CONFIG_FIRMWARE_PRODUCT_ID="PSG1218"
-        CONFIG_FIRMWARE_INCLUDE_HW_NAT=y
-        CONFIG_FIRMWARE_INCLUDE_UPNP=y
-        CONFIG_FIRMWARE_INCLUDE_MINIDLNA=n
-        CONFIG_FIRMWARE_INCLUDE_FIREFLY=n
-        CONFIG_FIRMWARE_INCLUDE_TRANSMISSION=n
-        CONFIG_FIRMWARE_INCLUDE_SSTP=n
-        CONFIG_FIRMWARE_INCLUDE_OPENVPN=n
-        CONFIG_FIRMWARE_INCLUDE_SAMBA=n
-        CONFIG_FIRMWARE_INCLUDE_WINS=n
-        CONFIG_FIRMWARE_INCLUDE_HTTPS=n
-        CONFIG_FIRMWARE_INCLUDE_SFTP=n
-        EOF
+        TARGET_CONFIG="/opt/rt-n56u/trunk/configs/templates/PSG1218.config"
+        
+        set_config() {
+          local key=$1
+          local val=$2
+          local file=$3
+          if grep -q "^${key}=" "$file"; then
+            sed -i "s|^${key}=.*|${key}=${val}|" "$file"
+          else
+            echo "${key}=${val}" >> "$file"
+          fi
+        }
+
+        # Enable high-priority gaming paths
+        set_config "CONFIG_FIRMWARE_INCLUDE_HW_NAT" "y" "$TARGET_CONFIG"
+        set_config "CONFIG_FIRMWARE_INCLUDE_UPNP" "y" "$TARGET_CONFIG"
+
+        # Disable heavy storage/VPN media applications to fit 8MB Flash limits
+        set_config "CONFIG_FIRMWARE_INCLUDE_MINIDLNA" "n" "$TARGET_CONFIG"
+        set_config "CONFIG_FIRMWARE_INCLUDE_FIREFLY" "n" "$TARGET_CONFIG"
+        set_config "CONFIG_FIRMWARE_INCLUDE_TRANSMISSION" "n" "$TARGET_CONFIG"
+        set_config "CONFIG_FIRMWARE_INCLUDE_SSTP" "n" "$TARGET_CONFIG"
+        set_config "CONFIG_FIRMWARE_INCLUDE_OPENVPN" "n" "$TARGET_CONFIG"
+        set_config "CONFIG_FIRMWARE_INCLUDE_SAMBA" "n" "$TARGET_CONFIG"
+        set_config "CONFIG_FIRMWARE_INCLUDE_WINS" "n" "$TARGET_CONFIG"
+        set_config "CONFIG_FIRMWARE_INCLUDE_HTTPS" "n" "$TARGET_CONFIG"
+        set_config "CONFIG_FIRMWARE_INCLUDE_SFTP" "n" "$TARGET_CONFIG"
 
     - name: Compile Custom Binary
       run: |
