@@ -29,8 +29,8 @@ jobs:
 
     - name: Inject CoD Optimization Profile
       run: |
-        cat << 'EOF' > /opt/rt-n56u/trunk/configs/templates/RT-AC51U.config
-        CONFIG_FIRMWARE_PRODUCT_ID="RT-AC51U"
+        cat << 'EOF' > /opt/rt-n56u/trunk/configs/templates/PSG1218.config
+        CONFIG_FIRMWARE_PRODUCT_ID="PSG1218"
         CONFIG_FIRMWARE_INCLUDE_HW_NAT=y
         CONFIG_FIRMWARE_INCLUDE_UPNP=y
         CONFIG_FIRMWARE_INCLUDE_MINIDLNA=n
@@ -47,7 +47,7 @@ jobs:
     - name: Compile Custom Binary
       run: |
         cd /opt/rt-n56u/trunk
-        fakeroot ./build_firmware_modify RT-AC51U
+        fakeroot ./build_firmware_modify PSG1218
 
     - name: Package Firmware File
       uses: actions/upload-artifact@v4
